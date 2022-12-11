@@ -230,6 +230,7 @@ function log_in(){
     expires=limit_time()
     log_in_server(ID,passwd,expires)
   }
+
 }
 function time_count(){
   var user_data=get_cookie("user_data")
@@ -246,12 +247,17 @@ function list_of_reciprocal(){
   main_window.innerHTML="<h1>"+time+"秒"+"</h1><button id='start'>倒數開始</button>"
   var counting=true
   var time=0
-  counting=document.getElementById('start').addEventListener('click',()=>false)
-  if (!counting)console.log("peko")
   /*for(var i=0;i<10;i++){
     setTimeout(() => {
       main_window.innerHTML="<h1>"+time+"秒"+"</h1><button onclick=''>倒數開始</button>"
       time++
     },i*1000 );
   }*/
+  var start=document.getElementById("start")
+  start.addEventListener('click',function(e){
+    e.preventDefault()
+    start.innerHTML="結束"
+    start.id="finish"
+  })
+
 }
