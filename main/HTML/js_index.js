@@ -244,36 +244,46 @@ function time_count(){
 function list_of_reciprocal(){
   var main_window=document.getElementById("main_window")
   main_window.innerHTML="<input type='text' id='hour'></input><h3>小時</h3><input type='text' id='min'></input><h3>分鐘</h3><input type='text' id='sec'></input><h3>秒</h3><button id='start'>計時開始</button>"
-  var str=document.getElementById("hour")
-  var hour,min,sec
   document.getElementById("start").addEventListener("click",function(){
     var hour=document.getElementById("hour").value
     var min=document.getElementById("min").value
     var sec=document.getElementById("sec").value
     main_window.innerHTML="<h3 id='time_clack'>"+"</h3><button id='start'>計時暫停</button>"
-    check_time(parseInt(hour),parseInt(min),parseInt(sec))
+    hour=parseInt(hour)
+    min=parseInt(min)
+    sec=parseInt(sec)
+    console.log(typeof hour,typeof min,typeof sec)
+    check_time(hour,min,sec)
   })
 }
 function check_time(hour,min,sec){
-  var time_clack=document.getElementById("time_clack")
+  console.log(hour,min,sec)
+  console.log(typeof hour,typeof min,typeof sec)
   for (var i=0;i<100;i++){
     if (hour<=0 && min<=0 && sec <=0)break
     sec--;
     if (sec<0){
       sec=59;
-      min--;
+      min=min-1;
     }
     if (min<0){
       min=59;
-      hour--;
-    }}
-    setTimeout(function(){
-      var str=""
-      if (hour>0)str+=hour+" 小時 "
-      if (min>0)str+=min+" 分鐘 "
-      str+=sec+" 秒鐘 "
-      time_clack.innerHTML=str
-      console.log(str)
-    },i*1000)
+      hour=hour-1;
+    }
+    //console.log(sec)
+    window.setTimeout(peko(i),i*1000)
+  }
+}
+function peko(i){
+  console.log(i)
+}
+function output(hour,min,sec){
+  var time_clack=document.getElementById('time_clack')
+  var str=""
+  if (hour>0)str+=hour+" 小時 "
+  if (min>0)str+=min+" 分鐘 "
+  str+=sec+" 秒鐘 "
+  time_clack.innerHTML=str
+  console.log(str)
 }
     
