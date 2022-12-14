@@ -6,7 +6,7 @@ var n_day
 var month_data
 //today()
 function link_api(year,month,day){
-  var dataUrl= "http://127.0.0.1:8000/user/me?schoolID=tcivs"
+  var dataUrl= "http://127.0.0.1:8000/action/school_data?schoolID=tcivs&"
   var dataUrl=dataUrl+"&year="+year+"&mon="+month
   var data
   var xhr = new XMLHttpRequest()
@@ -243,21 +243,37 @@ function time_count(){
 }
 function list_of_reciprocal(){
   var main_window=document.getElementById("main_window")
-  var time=0
-  main_window.innerHTML="<h1>"+time+"秒"+"</h1><button id='start'>倒數開始</button>"
-  var counting=true
-  var time=0
-  /*for(var i=0;i<10;i++){
-    setTimeout(() => {
-      main_window.innerHTML="<h1>"+time+"秒"+"</h1><button onclick=''>倒數開始</button>"
-      time++
-    },i*1000 );
-  }*/
-  var start=document.getElementById("start")
-  start.addEventListener('click',function(e){
-    e.preventDefault()
-    start.innerHTML="結束"
-    start.id="finish"
+  main_window.innerHTML="<input type='text' id='hour'></input><h3>小時</h3><input type='text' id='min'></input><h3>分鐘</h3><input type='text' id='sec'></input><h3>秒</h3><button id='start'>計時開始</button>"
+  var str=document.getElementById("hour")
+  var hour,min,sec
+  document.getElementById("start").addEventListener("click",function(){
+    var hour=document.getElementById("hour").value
+    var min=document.getElementById("min").value
+    var sec=document.getElementById("sec").value
+    main_window.innerHTML="<h3 id='time_clack'>"+"</h3><button id='start'>計時暫停</button>"
+    check_time(parseInt(hour),parseInt(min),parseInt(sec))
   })
-
 }
+function check_time(hour,min,sec){
+  var time_clack=document.getElementById("time_clack")
+  for (var i=0;i<100;i++){
+    if (hour<=0 && min<=0 && sec <=0)break
+    sec--;
+    if (sec<0){
+      sec=59;
+      min--;
+    }
+    if (min<0){
+      min=59;
+      hour--;
+    }}
+    setTimeout(function(){
+      var str=""
+      if (hour>0)str+=hour+" 小時 "
+      if (min>0)str+=min+" 分鐘 "
+      str+=sec+" 秒鐘 "
+      time_clack.innerHTML=str
+      console.log(str)
+    },i*1000)
+}
+    
