@@ -4,8 +4,8 @@ var n_year
 var n_month
 var n_day
 var month_data
-//today()
-function link_api(year,month,day){
+var main_window=document.getElementById("main_window")
+function link_api(year,month){
   var dataUrl= "http://127.0.0.1:8000/action/school_data?schoolID=tcivs&"
   var dataUrl=dataUrl+"&year="+year+"&mon="+month
   var data
@@ -242,25 +242,46 @@ function time_count(){
   console.log(data)
 }
 function list_of_reciprocal(){
-  var main_window=document.getElementById("main_window")
   main_window.innerHTML="<input type='text' id='hour'></input><h3>小時</h3><input type='text' id='min'></input><h3>分鐘</h3><input type='text' id='sec'></input><h3>秒</h3><button id='start'>計時開始</button>"
   document.getElementById("start").addEventListener("click",function(){
     var hour=document.getElementById("hour").value
     var min=document.getElementById("min").value
     var sec=document.getElementById("sec").value
-    main_window.innerHTML="<h3 id='time_clack'>"+"</h3><button id='start'>計時暫停</button>"
-    hour=parseInt(hour)
-    min=parseInt(min)
-    sec=parseInt(sec)
-    console.log(typeof hour,typeof min,typeof sec)
-    check_time(hour,min,sec)
+    main_window.innerHTML="<h3 id='time_clack'>"+"</h3><button id='stop'>計時暫停</button>"
+    output(hour,min,sec)
+    continue_count()
+  })
+}
+function continue_count(){
+  var n_count=document.getElementById('time_clack').innerHTML
+  n_count=n_count.split(" ")
+  if (n_count.length==6){var id=check_time(n_count[0],n_count[2],n_count[4]);var time=parseInt(n_count[0])*3600+parseInt(n_count[2])*60+parseInt(n_count[4])}
+  if (n_count.length==4){var id=check_time("0",n_count[0],n_count[2]);var time=parseInt(n_count[0])*60+parseInt(n_count[2])}
+  if (n_count.length==2){var id=check_time("0","0",n_count[0]);var time=parseInt(n_count[0])}
+  main_window.innerHTML="<h3 id='time_clack'>"+"</h3><button id='stop'>計時暫停</button>"
+  document.getElementById("stop").addEventListener("click",function(){
+    for (var i=0;i<time;i++)clearTimeout(id-i)
+    var n_count=document.getElementById('time_clack').innerHTML
+    main_window.innerHTML="<h3 id='time_clack'>"+n_count+"</h3>"+"<button onclick='continue_count()'>繼續</button>"+"<button onclick='list_of_reciprocal()'>重製</button>"
   })
 }
 function check_time(hour,min,sec){
-  console.log(hour,min,sec)
-  console.log(typeof hour,typeof min,typeof sec)
-  for (var i=0;i<100;i++){
-    if (hour<=0 && min<=0 && sec <=0)break
+  hour=parseInt(hour)
+  min=parseInt(min)
+  sec=parseInt(sec)
+  if (sec>60){
+    min+=Math.floor(sec/60)
+    sec=sec%60
+  }
+  if (min>60){
+    hour+=Math.floor(min/60)
+    min=min%60
+  }
+  var timer=hour*3600+min*60+sec
+  var id
+  for (var i=0;i<timer;i++){
+    id=setTimeout(function(){
+    if (hour<=0 && min<=0 && sec <=0)return 0
     sec--;
     if (sec<0){
       sec=59;
@@ -270,20 +291,18 @@ function check_time(hour,min,sec){
       min=59;
       hour=hour-1;
     }
-    //console.log(sec)
-    window.setTimeout(peko(i),i*1000)
+    output(hour,min,sec)
+    },i*1000)
   }
-}
-function peko(i){
-  console.log(i)
+  setTimeout(function(){console.log("endofcounting")},timer*1000)
+  return id
 }
 function output(hour,min,sec){
   var time_clack=document.getElementById('time_clack')
   var str=""
   if (hour>0)str+=hour+" 小時 "
-  if (min>0)str+=min+" 分鐘 "
-  str+=sec+" 秒鐘 "
+  if (min>0 || hour>0)str+=min+" 分鐘 "
+  str+=sec+" 秒鐘"
   time_clack.innerHTML=str
-  console.log(str)
 }
     

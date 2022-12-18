@@ -38,4 +38,4 @@ def save_data(ID,data):
 
 @app.get("/",response_class=HTMLResponse)
 def home(request:Request):
-    return templates.TemplateResponse('test.html',{'request':request})
+    return templates.TemplateResponse('index.html',{'request':request})
