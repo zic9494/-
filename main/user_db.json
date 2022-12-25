@@ -1,8 +1,4 @@
 {
- "SA": {
-  "school": "tcivs",
-  "ALL_sce": [[{"time":"08:00","event":"pekopeko"}]],
-  "Event_day":["2022/12/4"],
-  "memoradle": {}
- }
+ "SA": "{\"school\":\"tcivs\",\"ALL_sce\":[[{\"time\":\"18:33\",\"event\":\"marry krismas\"}]],\"Event_day\":[\"2022/12/25\"],\"memoradle\":{}}",
+ "111": "{}"
 }

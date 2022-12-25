@@ -3,7 +3,7 @@ function=["time_count","memorable"]
 with open("user_db.json",mode="r") as sfile:
     ALL_data=json.load(sfile)
 
-def save_data(now_data:dict,ID:str):
+def save_data(now_data,ID):
     ALL_data[ID]=now_data
     with open("user_db.json",mode="w") as file:
         json.dump(ALL_data,file,indent=1)

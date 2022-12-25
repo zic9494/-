@@ -6,7 +6,7 @@ var n_day
 var month_data
 var main_window=document.getElementById("main_window")
 function link_api(year,month){
-  var dataUrl= "http://127.0.0.1:8000/action/school_data?schoolID=tcivs&"
+  var dataUrl= "http://127.0.0.1:8000/action/school_data?schoolID=tcivs"
   var dataUrl=dataUrl+"&year="+year+"&mon="+month
   var data
   var xhr = new XMLHttpRequest()
@@ -28,6 +28,7 @@ function link_api(year,month){
     }
   }
 }
+
 function today(){
   date=Date.now()
   const dateObj = new Date(date)
@@ -36,6 +37,7 @@ function today(){
   n_day=dateObj.getDate()
   get_now_data()
 }
+
 function get_firstday(year,month){
   var d=new Date();
   d.setDate(1)
@@ -76,6 +78,7 @@ function get_now_data(){
   caleder=caleder+"</table><div id='day_schedule'></div>"
   main.innerHTML=caleder
 }
+
 function day_schedule(c_day){
   var data=get_cookie("user_data")
   data=JSON.parse(data)
@@ -95,6 +98,7 @@ function day_schedule(c_day){
   str=str+"<li id='add_list'><button onclick='aad_event("+c_day+")'>+</button></li></ul>"
   detal.innerHTML=str
 }
+
 function aad_event(day){
   var input=document.getElementById("add_list")
   input.innerHTML="<input type='time' id='tim'><input type='text' id='inp'><button id='sure' onclick='write_event("+day+")'>確定</button>"
@@ -105,6 +109,7 @@ function aad_event(day){
     }
   })
 }
+
 function write_event(c_day){
   var data=get_cookie("user_data")
   data=JSON.parse(data)
@@ -137,9 +142,11 @@ function write_event(c_day){
     data.Event_day=event.slice(10,event.length())
   }
   write_cookie("user_data",data,limit)
+  setTimeout(save_data(),0)
   get_now_data()
   day_schedule(c_day)
 }
+
 function del_event(c_day,index){
   var data=get_cookie("user_data")
   data=JSON.parse(data)
@@ -171,6 +178,7 @@ function del_event(c_day,index){
   write_cookie("user_data",data,limit)
   get_now_data()
   day_schedule(c_day)
+  setTimeout(save_data(),0)
 }
 
 function month_move(move){
@@ -200,7 +208,14 @@ function write_cookie(name,data,time_limit){
   data=JSON.stringify(data)
   document.cookie=name+"="+data+";"+time_limit
 }
-
+function save_data(){
+  id=get_cookie("user_id")
+  data=get_cookie("user_data")
+  data_Url="http://127.0.0.1:8000/action/return_data?ID="+ID+"&data="+data
+  var xhr=new XMLHttpRequest()
+  xhr.open('GET',data_Url,true)
+  xhr.send()
+}
 function log_in_server(ID,passwd,time_limit){
   data_Url="http://127.0.0.1:8000/action/login?ID="+ID+"&passwd="+passwd
   var xhr=new XMLHttpRequest()
@@ -232,6 +247,7 @@ function log_in(){
   }
 
 }
+
 function time_count(){
   var user_data=get_cookie("user_data")
   if (user_data==null){
@@ -241,6 +257,7 @@ function time_count(){
   var data=JSON.parse(user_data)
   console.log(data)
 }
+
 function list_of_reciprocal(){
   main_window.innerHTML="<input type='text' id='hour'></input><h3>小時</h3><input type='text' id='min'></input><h3>分鐘</h3><input type='text' id='sec'></input><h3>秒</h3><button id='start'>計時開始</button>"
   document.getElementById("start").addEventListener("click",function(){
@@ -252,6 +269,7 @@ function list_of_reciprocal(){
     continue_count()
   })
 }
+
 function continue_count(){
   var n_count=document.getElementById('time_clack').innerHTML
   n_count=n_count.split(" ")
@@ -265,6 +283,7 @@ function continue_count(){
     main_window.innerHTML="<h3 id='time_clack'>"+n_count+"</h3>"+"<button onclick='continue_count()'>繼續</button>"+"<button onclick='list_of_reciprocal()'>重製</button>"
   })
 }
+
 function check_time(hour,min,sec){
   hour=parseInt(hour)
   min=parseInt(min)
@@ -297,6 +316,7 @@ function check_time(hour,min,sec){
   setTimeout(function(){console.log("endofcounting")},timer*1000)
   return id
 }
+
 function output(hour,min,sec){
   var time_clack=document.getElementById('time_clack')
   var str=""
