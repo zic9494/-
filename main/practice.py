@@ -33,8 +33,8 @@ def enrol(ID,passwd):
     user_data.enroll(ID,passwd)
 
 @app.get("/action/return_data")
-def save_data(ID,data):
-    user_data.save_data(data,ID)
+def save_data(act,ID,data:str,what):
+    return user_data.save_data(act,ID,what,data)
 
 @app.get("/",response_class=HTMLResponse)
 def home(request:Request):

@@ -6,7 +6,7 @@ var n_day
 var month_data
 var main_window=document.getElementById("main_window")
 function link_api(year,month){
-  var dataUrl= "http://127.0.0.1:8000/action/school_data?schoolID=tcivs"
+  var dataUrl= "https://92b8-210-70-74-168.jp.ngrok.io/action/school_data?schoolID=tcivs"
   var dataUrl=dataUrl+"&year="+year+"&mon="+month
   var data
   var xhr = new XMLHttpRequest()
@@ -118,19 +118,21 @@ function write_event(c_day){
   var index
   var data_list=data.Event_day
   for (index=0;index<data_list.length;index++)if (data_list[index]==day){i=index;break}
-  console.log(data_list,day)
   if (i!=-1){
     var inp=document.getElementById("inp").value
     var tim=document.getElementById("tim").value
     var chang=data.ALL_sce[index]
-    chang.push({"time":tim,"event":inp})
+    var tmp={"time":tim,"event":inp}
+    chang.push(tmp)
     data.ALL_sce[index]=chang
   }else{
     data_list.push(day)
     var inp=document.getElementById("inp").value
     var tim=document.getElementById("tim").value
     var chang=data.ALL_sce
-    chang.push([{"time":tim,"event":inp}])
+    var tmp=[{"time":tim,"event":inp}]
+    var i=data_list.length
+    chang.push(tmp)
     data.ALL_sce=chang
     data.Event_day=data_list
   }
@@ -141,8 +143,12 @@ function write_event(c_day){
     data.ALL_sce=check.slice(10,check.length())
     data.Event_day=event.slice(10,event.length())
   }
+  var json=JSON.stringify(tmp).replace(/"/g,"'")
+  json=json.replace(/ /g,"%20")
+  var tmp=json+'%3D'+day
+  console.log(tmp)
   write_cookie("user_data",data,limit)
-  setTimeout(save_data(),0)
+  setTimeout(save_data("sec","add",tmp),0)
   get_now_data()
   day_schedule(c_day)
 }
@@ -150,16 +156,16 @@ function write_event(c_day){
 function del_event(c_day,index){
   var data=get_cookie("user_data")
   data=JSON.parse(data)
-  s_day=n_year+"/"+(n_month+1)+"/"+c_day
+  var s_day=n_year+"/"+(n_month+1)+"/"+c_day
   var day=data.Event_day
   var i=-1
   for (var x=0;x<day.length;x++)if(day[x]==s_day){i=x;break};
   var e_data=data.ALL_sce
+  var be_del=JSON.stringify(e_data[index]).replace(/"/g,"'").replace(/ /g,"%20")
   if (index==0 && e_data[i].length==1){
     var tmp=[]
     if (i>0)tmp=e_data.slice(0,i)
     tmp=tmp.concat(e_data.slice(i+1,e_data.length))
-    console.log(tmp)
     data.ALL_sce=tmp
     
     tmp=[]
@@ -178,7 +184,7 @@ function del_event(c_day,index){
   write_cookie("user_data",data,limit)
   get_now_data()
   day_schedule(c_day)
-  setTimeout(save_data(),0)
+  setTimeout(save_data("sec","del",be_del+"%3D"+s_day),0)
 }
 
 function month_move(move){
@@ -197,8 +203,8 @@ function get_cookie(kind){
   let decodeCookie=decodeURIComponent(document.cookie)
   let piece=decodeCookie.split(";")
   let data
-  if (kind=="user_id")data=piece[0];
-  else if (kind=="user_data")data=piece[1];
+  if (kind=="user_id")data=piece[1];
+  else if (kind=="user_data")data=piece[2];
   kind=kind+'='
   while (data.charAt(0)==' ')data=data.substring(1)
   if (data.indexOf(kind)==0)return data.substring(kind.length,data.length)
@@ -208,16 +214,17 @@ function write_cookie(name,data,time_limit){
   data=JSON.stringify(data)
   document.cookie=name+"="+data+";"+time_limit
 }
-function save_data(){
+function save_data(what,act,data){
+  console.log(data)
   id=get_cookie("user_id")
-  data=get_cookie("user_data")
-  data_Url="http://127.0.0.1:8000/action/return_data?ID="+ID+"&data="+data
-  var xhr=new XMLHttpRequest()
-  xhr.open('GET',data_Url,true)
-  xhr.send()
+  data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/return_data?act="+act+"&ID="+id+"&what="+what+"&data="+data
+  console.log(data_Url)
+  //var xhr=new XMLHttpRequest()
+  //xhr.open('GET',data_Url,true)
+  //xhr.send()
 }
 function log_in_server(ID,passwd,time_limit){
-  data_Url="http://127.0.0.1:8000/action/login?ID="+ID+"&passwd="+passwd
+  data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/login?ID="+ID+"&passwd="+passwd
   var xhr=new XMLHttpRequest()
   xhr.open('GET',data_Url,true)
   xhr.send()
@@ -280,7 +287,7 @@ function continue_count(){
   document.getElementById("stop").addEventListener("click",function(){
     for (var i=0;i<time;i++)clearTimeout(id-i)
     var n_count=document.getElementById('time_clack').innerHTML
-    main_window.innerHTML="<h3 id='time_clack'>"+n_count+"</h3>"+"<button onclick='continue_count()'>繼續</button>"+"<button onclick='list_of_reciprocal()'>重製</button>"
+    main_window.innerHTML="<h3 id='time_clack'>"+n_count+"</h3>"+"<button onclick='continue_count()'>繼續</button>"+"<button onclick='list_of_reciprocal()'>重置</button>"
   })
 }
 
@@ -325,4 +332,3 @@ function output(hour,min,sec){
   str+=sec+" 秒鐘"
   time_clack.innerHTML=str
 }
-    
