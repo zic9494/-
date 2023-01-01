@@ -26,18 +26,27 @@ def add_sec(data,ID):
     t =datetime(1900,1,1,Time.tm_hour,Time.tm_min)
     str=f"INSERT INTO sec(event, date, time, user_id) \nVALUES ('{detal['event']}','{d}','{t}','{ID}')"
     cursor.execute(str)
+    cursor.commit()
     return 1
 
 def del_sec(data,ID):
-    detal,day=data.split(" ")
+    detal,day=data.split("=")
     day = time.strptime(day, "%Y/%m/%d")
-    detal=detal[2:-1:].split("}")
-    detal=json.loads("{"+detal[0]+"}")
+    detal=detal[1:-1:]
+    now=""
+    for i in detal:
+        if i== '\'':
+            now +="\""
+        else:
+            now+=i
+    detal=json.loads(now)
     d = datetime(day.tm_year,day.tm_mon,day.tm_mday)
     Time = time.strptime(detal['time'], "%H:%M")
     t =datetime(1900,1,1,Time.tm_hour,Time.tm_min)
     str=f"DELETE FROM sec \nWHERE event='{detal['event']}' AND user_id='{ID}' AND date='{d}' AND time='{t}'"
     cursor.execute(str)
+    cursor.commit()
+    return 1
     
 
 def save_data(act,ID,what,data):
@@ -46,7 +55,6 @@ def save_data(act,ID,what,data):
             return add_sec(data,ID)
         if act=="del":
             return del_sec(data,ID)
-    cursor.commit()
 
 def log_in(ID:str,passwd:str):
     try:
@@ -111,4 +119,5 @@ def log_in(ID:str,passwd:str):
     return True'''
 
 if __name__=="__main__":
-    log_in("SA","peko123")
+    tmp=save_data("del","SA","sec","[{'time':'20:34','event':'%20now%20year'}]%3D2023/1/1")
+    print(tmp)

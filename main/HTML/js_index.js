@@ -46,6 +46,8 @@ function get_firstday(year,month){
   return d.getDay()
 }
 
+
+
 function get_now_data(){
   var days
   first_day=get_firstday(n_year,n_month)
@@ -57,7 +59,7 @@ function get_now_data(){
     }else days=29
   }else days=month_day[n_month];
   var main=document.getElementById("main_window")
-  var caleder='<h1>'+n_year+"年"+(n_month+1)+"月"+'</h1>'+'<button onclick="month_move(-1)"><</button><button onclick="month_move(1)">></button><button onclick="today()">今天</button>'+'<table cellpadding="10px",border="1px solid black",border-collapse="collapse">'
+  var caleder='<div class=calendar_title><h1>'+n_year+"年"+(n_month+1)+"月"+'</h1>'+'<button click="month_move(-1)"><</button><button onclick="month_move(1)">></button><button onclick="today()">今天</button></div>'+'<table class=".calendar">'
   caleder=caleder+"<tr>"
   for (var i=0;i<7;i++){caleder=caleder+"<td>"+chine_day[i]+"</td>"}
   caleder=caleder+"</tr>"
@@ -70,7 +72,7 @@ function get_now_data(){
         caleder=caleder+"<td>&nbsp;</td>"
       }else{
         var day=i*7+x-first_day+1
-        caleder=caleder+"<td onclick=day_schedule("+day+")>"+day+"</td>"
+        caleder=caleder+"<td class=every_day onclick=day_schedule("+day+")>"+day+"</td>"
       }
     }
     caleder=caleder+"</tr>"
@@ -78,6 +80,7 @@ function get_now_data(){
   caleder=caleder+"</table><div id='day_schedule'></div>"
   main.innerHTML=caleder
 }
+
 
 function day_schedule(c_day){
   var data=get_cookie("user_data")
@@ -148,7 +151,7 @@ function write_event(c_day){
   var tmp=json+'%3D'+day
   console.log(tmp)
   write_cookie("user_data",data,limit)
-  setTimeout(save_data("sec","add",tmp),0)
+  save_data("sec","add",tmp)
   get_now_data()
   day_schedule(c_day)
 }
@@ -184,7 +187,7 @@ function del_event(c_day,index){
   write_cookie("user_data",data,limit)
   get_now_data()
   day_schedule(c_day)
-  setTimeout(save_data("sec","del",be_del+"%3D"+s_day),0)
+  save_data("sec","del",be_del+"%3D"+s_day),0
 }
 
 function month_move(move){
@@ -215,13 +218,11 @@ function write_cookie(name,data,time_limit){
   document.cookie=name+"="+data+";"+time_limit
 }
 function save_data(what,act,data){
-  console.log(data)
   id=get_cookie("user_id")
   data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/return_data?act="+act+"&ID="+id+"&what="+what+"&data="+data
-  console.log(data_Url)
-  //var xhr=new XMLHttpRequest()
-  //xhr.open('GET',data_Url,true)
-  //xhr.send()
+  var xhr=new XMLHttpRequest()
+  xhr.open('GET',data_Url,true)
+  xhr.send()
 }
 function log_in_server(ID,passwd,time_limit){
   data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/login?ID="+ID+"&passwd="+passwd
