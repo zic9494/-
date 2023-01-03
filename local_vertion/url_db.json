@@ -1,0 +1,11 @@
+{
+    "url":"https://clients6.google.com/calendar/v3/calendars/",
+    "medel1":"/events?calendarId=",
+    "befor_time":"&singleEvents=true&timeZone=Asia%2FTaipei&maxAttendees=1&maxResults=250&sanitizeHtml=true&timeMin=",
+    "between_time":"T00%3A00%3A00%2B08%3A00&timeMax=",
+    "the_end":"T00%3A00%3A00%2B08%3A00&key=AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs",
+    "tcivs":{
+        "S_url":"reg@tcivs.tc.edu.tw",
+        "calendarId":"reg%40tcivs.tc.edu.tw"
+    }
+}
