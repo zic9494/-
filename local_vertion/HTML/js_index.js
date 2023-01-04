@@ -5,7 +5,8 @@ var n_month
 var n_day
 var month_data
 var main_window=document.getElementById("main_window")
-function link_api(year,month){
+function link_api(year,month)/*目前用不到*/{
+  
   var dataUrl= "https://92b8-210-70-74-168.jp.ngrok.io/action/school_data?schoolID=tcivs"
   var dataUrl=dataUrl+"&year="+year+"&mon="+month
   var data
@@ -29,7 +30,7 @@ function link_api(year,month){
   }
 }
 
-function today(){
+function today()/*獲取今天日期和呼叫行事曆*/{
   date=Date.now()
   const dateObj = new Date(date)
   n_year=dateObj.getFullYear()
@@ -38,7 +39,7 @@ function today(){
   get_now_data()
 }
 
-function get_firstday(year,month){
+function get_firstday(year,month)/*獲得該月的第一天為星期幾*/{
   var d=new Date();
   d.setDate(1)
   d.setFullYear(year)
@@ -46,9 +47,7 @@ function get_firstday(year,month){
   return d.getDay()
 }
 
-
-
-function get_now_data(){
+function get_now_data()/*列印出行事曆日期*/{
   var days
   first_day=get_firstday(n_year,n_month)
   if (n_month==1 && n_year%4==0){
@@ -82,7 +81,7 @@ function get_now_data(){
 }
 
 
-function day_schedule(c_day){
+function day_schedule(c_day)/*獲取被點擊當天的所有行程，並產生 to_do list*/{
   var data=get_cookie("user_data")
   data=JSON.parse(data)
   day=n_year+"/"+(n_month+1)+"/"+c_day
@@ -102,7 +101,7 @@ function day_schedule(c_day){
   detal.innerHTML=str
 }
 
-function aad_event(day){
+function aad_event(day)/*新增被點擊那天的行程*/{
   var input=document.getElementById("add_list")
   input.innerHTML="<input type='time' id='tim'><input type='text' id='inp'><button id='sure' onclick='write_event("+day+")'>確定</button>"
   inp.addEventListener("keypress",function(event){
@@ -113,7 +112,7 @@ function aad_event(day){
   })
 }
 
-function write_event(c_day){
+function write_event(c_day)/*將形成寫入cookie*/{
   var data=get_cookie("user_data")
   data=JSON.parse(data)
   var day=n_year+'/'+(n_month+1)+'/'+c_day
@@ -156,7 +155,7 @@ function write_event(c_day){
   day_schedule(c_day)
 }
 
-function del_event(c_day,index){
+function del_event(c_day,index)/*將被刪除的行程從cookie移除*/{
   var data=get_cookie("user_data")
   data=JSON.parse(data)
   var s_day=n_year+"/"+(n_month+1)+"/"+c_day
@@ -164,7 +163,8 @@ function del_event(c_day,index){
   var i=-1
   for (var x=0;x<day.length;x++)if(day[x]==s_day){i=x;break};
   var e_data=data.ALL_sce
-  var be_del=JSON.stringify(e_data[index]).replace(/"/g,"'").replace(/ /g,"%20")
+  var be_del=JSON.stringify(e_data[index]).replace(/"/g,"'")
+  console.log(be_del)
   if (index==0 && e_data[i].length==1){
     var tmp=[]
     if (i>0)tmp=e_data.slice(0,i)
@@ -190,7 +190,7 @@ function del_event(c_day,index){
   save_data("sec","del",be_del+"%3D"+s_day),0
 }
 
-function month_move(move){
+function month_move(move)/*行事曆的月份移動*/{
   n_month=n_month+move
   if (n_month<0){
     n_year-=1;
@@ -202,30 +202,32 @@ function month_move(move){
   get_now_data()
 }
 
-function get_cookie(kind){
+function get_cookie(kind)/*讀取cookie*/{
   let decodeCookie=decodeURIComponent(document.cookie)
   let piece=decodeCookie.split(";")
   let data
-  if (kind=="user_id")data=piece[0];
-  else if (kind=="user_data")data=piece[1];
+  if (kind=="user_id")data=piece[1];
+  else if (kind=="user_data")data=piece[2];
   kind=kind+'='
   while (data.charAt(0)==' ')data=data.substring(1)
   if (data.indexOf(kind)==0)return data.substring(kind.length,data.length)
 }
 
-function write_cookie(name,data,time_limit){
+function write_cookie(name,data,time_limit)/*撰寫或修改cookie*/{
   data=JSON.stringify(data)
   document.cookie=name+"="+data+";"+time_limit
 }
-function save_data(what,act,data){
+
+function save_data(what,act,data)/*將有改變的資料回傳至web server*/{
   id=get_cookie("user_id")
-  data_Url="http://127.0.0.1:8000//action/return_data?act="+act+"&ID="+id+"&what="+what+"&data="+data
+  data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/return_data?act="+act+"&ID="+id+"&what="+what+"&data="+data
   var xhr=new XMLHttpRequest()
   xhr.open('GET',data_Url,true)
   xhr.send()
 }
-function log_in_server(ID,passwd,time_limit){
-  data_Url="http://127.0.0.1:8000/action/login?ID="+ID+"&passwd="+passwd
+
+function log_in_server(ID,passwd,time_limit)/*向web server提出登入請求，並回傳使用者資料*/{
+  data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/login?ID="+ID+"&passwd="+passwd
   var xhr=new XMLHttpRequest()
   xhr.open('GET',data_Url,true)
   xhr.send()
@@ -233,17 +235,19 @@ function log_in_server(ID,passwd,time_limit){
     tmp=xhr.responseText
     document.cookie = 'user_id='+ID+";"+time_limit
     document.cookie="user_data="+tmp+";"+time_limit
+    if (tmp==0)main_window.innerHTML="<h3>log in fail</h3>"
+    else main_window.innerHTML="<h3>log in success</h3>"
   }
   
 }
 
-function limit_time(){
+function limit_time()/*設定cookie的到期時間*/{
   const d=new Date()
   d.setTime(d.getTime()+(7*24*60*60*1000))
   return 'expires='+d.toUTCString()
 }
 
-function log_in(){
+function log_in()/*獲取使用者輸入的資料*/{
   var main_window=document.getElementById("main_window")
   var str='<input id="username" type="text"><input id="passwd" type="password"><button id="sure">確定</button>'
   main_window.innerHTML=str
@@ -256,7 +260,7 @@ function log_in(){
 
 }
 
-function time_count(){
+function time_count()/*獲取使用者輸入的資料*/{
   var user_data=get_cookie("user_data")
   if (user_data==null){
     log_in()
@@ -266,7 +270,7 @@ function time_count(){
   console.log(data)
 }
 
-function list_of_reciprocal(){
+function list_of_reciprocal()/*獲取倒數計時時間*/{
   main_window.innerHTML="<input type='text' id='hour'></input><h3>小時</h3><input type='text' id='min'></input><h3>分鐘</h3><input type='text' id='sec'></input><h3>秒</h3><button id='start'>計時開始</button>"
   document.getElementById("start").addEventListener("click",function(){
     var hour=document.getElementById("hour").value
@@ -278,7 +282,7 @@ function list_of_reciprocal(){
   })
 }
 
-function continue_count(){
+function continue_count()/*繼續計時*/{
   var n_count=document.getElementById('time_clack').innerHTML
   n_count=n_count.split(" ")
   if (n_count.length==6){var id=check_time(n_count[0],n_count[2],n_count[4]);var time=parseInt(n_count[0])*3600+parseInt(n_count[2])*60+parseInt(n_count[4])}
@@ -292,7 +296,7 @@ function continue_count(){
   })
 }
 
-function check_time(hour,min,sec){
+function check_time(hour,min,sec)/*設定時間，且確保時間不為負數*/{
   hour=parseInt(hour)
   min=parseInt(min)
   sec=parseInt(sec)
@@ -325,11 +329,53 @@ function check_time(hour,min,sec){
   return id
 }
 
-function output(hour,min,sec){
+function output(hour,min,sec)/*更新剩餘時間*/{
   var time_clack=document.getElementById('time_clack')
   var str=""
   if (hour>0)str+=hour+" 小時 "
   if (min>0 || hour>0)str+=min+" 分鐘 "
   str+=sec+" 秒鐘"
   time_clack.innerHTML=str
+}
+
+function memorable()/*呼叫備忘錄*/{
+  data=get_cookie("user_data")
+  var data=JSON.parse(data)
+  var list=data.memorable
+  var str=""
+  for (var i=0;i<list.length;i++){
+    str=str+"<li><button onclick='del_memorable("+i+")'>-</button>"+list[i]+"</li>"
+  }
+  str+="<li id='add'><button onclick='add_memor()'>+</button></li>"
+  main_window.innerHTML=str
+}
+
+function del_memorable(index)/*刪除備忘錄*/{
+  var data=get_cookie("user_data")
+  data=JSON.parse(data)
+  var tmp=data.memorable
+  var be_del=tmp[index]
+  data.memorable=tmp.slice(0,index)
+  tmp=tmp.slice(index+1,index.length)
+  for (var i=0;i<tmp.length;i++)data.memorable.push(tmp[i])
+  var limit=limit_time()
+  write_cookie("user_data",data,limit)
+  save_data('memorable','del',be_del)
+  memorable()
+}
+function add_memor()/*呼叫備忘錄新增備忘錄的頁面*/{
+  str="<input type='text' id='inp'><button onclick='add_memorable()'>確定</button>"
+  var list=document.getElementById("add")
+  list.innerHTML=str
+}
+function add_memorable()/*新增備忘錄*/{
+  var data=get_cookie("user_data")
+  var inp=document.getElementById('inp').value
+  var list=document.getElementById("add")
+  data=JSON.parse(data)
+  data.memorable.push(inp)
+  var limit=limit_time()
+  write_cookie("user_data",data,limit)
+  save_data('memorable','add',inp)
+  memorable()
 }

@@ -30,7 +30,9 @@ def add_sec(data,ID):
     return 1
 
 def del_sec(data,ID):
-    detal,day=data.split("=")
+    tmp=data.split("=")
+    detal=tmp[0]
+    day=tmp[1]
     day = time.strptime(day, "%Y/%m/%d")
     detal=detal[1:-1:]
     now=""
@@ -48,14 +50,28 @@ def del_sec(data,ID):
     cursor.commit()
     return 1
     
+def add_memor(data,ID):
+    str=f"INSERT INTO memorable(data, user_id) \nVALUES ('{data}','{ID}')"
+    cursor.execute(str)
+    cursor.commit()
+    return 1
 
+def del_memor(data,ID):
+    str=f"DELETE FROM memorable \nWHERE user_id='{ID}' AND data='{data}'"
+    cursor.execute(str)
+    cursor.commit()
+    
 def save_data(act,ID,what,data):
     if what=='sec':
         if act=="add":
             return add_sec(data,ID)
         if act=="del":
             return del_sec(data,ID)
-
+    if what=='memorable':
+        if act=="add":
+            return add_memor(data,ID)
+        if act=="del":
+            return del_memor(data,ID)
 def log_in(ID:str,passwd:str):
     try:
         cursor.execute(f"SELECT * FROM user_passwd \n where user_id ='{ID}'")
