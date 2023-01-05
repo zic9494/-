@@ -60,7 +60,30 @@ def del_memor(data,ID):
     str=f"DELETE FROM memorable \nWHERE user_id='{ID}' AND data='{data}'"
     cursor.execute(str)
     cursor.commit()
-    
+
+def enroll(data):
+    try:
+        data=data[:-1:]
+        now=""
+        for i in data:
+            if i== '\'':
+                now +="\""
+            else:
+                now+=i
+        data=json.loads(now)
+        school=data["school_id"]
+        passwd=data["passwd"]
+        ID=data["user_id"]
+        str=f"INSERT INTO user_passwd(passwd, user_id) \nVALUES ('{passwd}','{ID}')"
+        cursor.execute(str)
+        cursor.commit()
+        str=f"INSERT INTO school(school_id, user_id) \nVALUES ('{school}','{ID}')"
+        cursor.execute(str)
+        cursor.commit()
+        return 1
+    except:
+        return 0
+
 def save_data(act,ID,what,data):
     if what=='sec':
         if act=="add":
@@ -72,6 +95,9 @@ def save_data(act,ID,what,data):
             return add_memor(data,ID)
         if act=="del":
             return del_memor(data,ID)
+    if what =="enroll":
+        return enroll(data)
+        
 def log_in(ID:str,passwd:str):
     try:
         cursor.execute(f"SELECT * FROM user_passwd \n where user_id ='{ID}'")
@@ -119,20 +145,6 @@ def log_in(ID:str,passwd:str):
     except:
         return 0
 
-'''def enroll(ID:str,passwd:str):
-    now_data={ID:{"school":"","time_count":{},"memorable":[]}}
-    
-    with open("password.json",mode="r") as file:
-        password=json.load(file)
-    password.update({ID:passwd})
-    
-    with open("password.json",mode="w") as n_file:
-        json.dump(password,n_file,indent=1)
-    
-    ALL_data.update(now_data)
-    with open("user_db.json",mode="w") as file:
-        json.dump(ALL_data,file,indent=1)
-    return True'''
 
 if __name__=="__main__":
     tmp=save_data("del","SA","sec","[{'time':'20:34','event':'%20now%20year'}]%3D2023/1/1")

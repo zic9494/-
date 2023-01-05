@@ -80,7 +80,6 @@ function get_now_data()/*列印出行事曆日期*/{
   main.innerHTML=caleder
 }
 
-
 function day_schedule(c_day)/*獲取被點擊當天的所有行程，並產生 to_do list*/{
   var data=get_cookie("user_data")
   data=JSON.parse(data)
@@ -97,11 +96,11 @@ function day_schedule(c_day)/*獲取被點擊當天的所有行程，並產生 t
       str=str+"<li><button onclick=del_event("+c_day+","+x+")>-</button>"+data.ALL_sce[i][x].time+" ： "+data.ALL_sce[i][x].event+"</li>"
     }
   }
-  str=str+"<li id='add_list'><button onclick='aad_event("+c_day+")'>+</button></li></ul>"
+  str=str+"<li id='add_list'><button onclick='add_event("+c_day+")'>+</button></li></ul>"
   detal.innerHTML=str
 }
 
-function aad_event(day)/*新增被點擊那天的行程*/{
+function add_event(day)/*新增被點擊那天的行程*/{
   var input=document.getElementById("add_list")
   input.innerHTML="<input type='time' id='tim'><input type='text' id='inp'><button id='sure' onclick='write_event("+day+")'>確定</button>"
   inp.addEventListener("keypress",function(event){
@@ -221,6 +220,7 @@ function write_cookie(name,data,time_limit)/*撰寫或修改cookie*/{
 function save_data(what,act,data)/*將有改變的資料回傳至web server*/{
   id=get_cookie("user_id")
   data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/return_data?act="+act+"&ID="+id+"&what="+what+"&data="+data
+  console.log(data_Url)
   var xhr=new XMLHttpRequest()
   xhr.open('GET',data_Url,true)
   xhr.send()
@@ -249,25 +249,28 @@ function limit_time()/*設定cookie的到期時間*/{
 
 function log_in()/*獲取使用者輸入的資料*/{
   var main_window=document.getElementById("main_window")
-  var str='<input id="username" type="text"><input id="passwd" type="password"><button id="sure">確定</button>'
+  var str='<input id="username" type="text"><input id="passwd" type="password"><button id="sure">確定</button><a href="javascript:enroll()">沒有帳號嗎?</a>'
   main_window.innerHTML=str
   document.getElementById("sure").onclick=function(){
     ID=document.getElementById("username").value
     var passwd=document.getElementById("passwd").value
-    expires=limit_time()
-    log_in_server(ID,passwd,expires)
+    log_in_server(ID,passwd,limit_time())
   }
 
 }
 
-function time_count()/*獲取使用者輸入的資料*/{
-  var user_data=get_cookie("user_data")
-  if (user_data==null){
-    log_in()
-    user_data=get_cookie("user_data")
-  }
-  var data=JSON.parse(user_data)
-  console.log(data)
+function enroll()/*呼叫註冊頁面*/{
+  main_window.innerHTML='<h3>使用者帳號(50字元以下)</h3><input id="e_username" type="text"><h3>密碼(50字元以下)</h3><input id="password" type="password"><h3>學校代碼(小寫)</h3><input id="school" type="text"><button onclick="inp_sure()">確定</button>'
+}
+
+function inp_sure()/*獲取註冊資料*/{
+  var ID=document.getElementById("e_username").value
+  var passwd=document.getElementById("password").value
+  var school=document.getElementById("school").value
+  var data={"user_id":ID,'passwd':passwd,'school_id':school}
+  write_cookie('user_id',null ,limit_time() )
+  data=JSON.stringify(data).replace(/"/g,"\'")
+  save_data("enroll","add",data+"%3D")
 }
 
 function list_of_reciprocal()/*獲取倒數計時時間*/{
@@ -363,11 +366,13 @@ function del_memorable(index)/*刪除備忘錄*/{
   save_data('memorable','del',be_del)
   memorable()
 }
+
 function add_memor()/*呼叫備忘錄新增備忘錄的頁面*/{
   str="<input type='text' id='inp'><button onclick='add_memorable()'>確定</button>"
   var list=document.getElementById("add")
   list.innerHTML=str
 }
+
 function add_memorable()/*新增備忘錄*/{
   var data=get_cookie("user_data")
   var inp=document.getElementById('inp').value
