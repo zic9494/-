@@ -61,19 +61,8 @@ def del_memor(data,ID):
     cursor.execute(str)
     cursor.commit()
 
-def enroll(data):
+def enroll(ID,passwd,school):
     try:
-        data=data[:-1:]
-        now=""
-        for i in data:
-            if i== '\'':
-                now +="\""
-            else:
-                now+=i
-        data=json.loads(now)
-        school=data["school_id"]
-        passwd=data["passwd"]
-        ID=data["user_id"]
         str=f"INSERT INTO user_passwd(passwd, user_id) \nVALUES ('{passwd}','{ID}')"
         cursor.execute(str)
         cursor.commit()
@@ -95,8 +84,6 @@ def save_data(act,ID,what,data):
             return add_memor(data,ID)
         if act=="del":
             return del_memor(data,ID)
-    if what =="enroll":
-        return enroll(data)
         
 def log_in(ID:str,passwd:str):
     try:
@@ -105,7 +92,6 @@ def log_in(ID:str,passwd:str):
             password=row[1]
         
         if passwd !=password:
-            cursor.close()
             return 0
         else:
             cursor.execute(f"SELECT * FROM sec \n where user_id ='{ID}'")

@@ -5,28 +5,18 @@ var n_month
 var n_day
 var month_data
 var main_window=document.getElementById("main_window")
-function link_api(year,month)/*目前用不到*/{
-  
-  var dataUrl= "https://92b8-210-70-74-168.jp.ngrok.io/action/school_data?schoolID=tcivs"
-  var dataUrl=dataUrl+"&year="+year+"&mon="+month
-  var data
-  var xhr = new XMLHttpRequest()
+function get_school_data()/*取得學校行事曆*/{
+  var User_data=get_cookie("user_data")
+  User_data=JSON.parse(User_data)
+  var dataUrl= "https://92b8-210-70-74-168.jp.ngrok.io/action/school_data?schoolID="+User_data.school+"&year="+n_year+"&mon="+(n_month+1)
+  console.log(dataUrl)
+  var xhr=new XMLHttpRequest()
   xhr.open('GET',dataUrl,true)
-  xhr.send()
+  setTimeout(xhr.send(),0)
   xhr.onload=function(){
-    data=xhr.responseText
-    data=JSON.parse(data)
-    console.log(data)
-    var i=0
-    while (true){
-      var start_days=data.items[i].start.date
-      start_days=start_days.split('-')
-      start_days=start_days.map(x => parseInt(x))
-      var end_day=data.items[i].end.date
-      end_day=end_day.split('-')
-      end_day=end_day.map(x => parseInt(x))
-      if (start_days[1]>month);
-    }
+    var data=xhr.responseText
+    write_cookie("school_data",data,limit_time())
+    var tmp=get_cookie("user_id")
   }
 }
 
@@ -36,7 +26,9 @@ function today()/*獲取今天日期和呼叫行事曆*/{
   n_year=dateObj.getFullYear()
   n_month=dateObj.getMonth()
   n_day=dateObj.getDate()
+  get_school_data()
   get_now_data()
+  day_schedule(n_day)
 }
 
 function get_firstday(year,month)/*獲得該月的第一天為星期幾*/{
@@ -60,12 +52,12 @@ function get_now_data()/*列印出行事曆日期*/{
   var main=document.getElementById("main_window")
   var caleder='<div class=calendar_title><h1>'+n_year+"年"+(n_month+1)+"月"+'</h1>'+'<button onclick="month_move(-1)"><</button><button onclick="month_move(1)">></button><button onclick="today()">今天</button></div>'+'<table class=".calendar">'
   caleder=caleder+"<tr>"
-  for (var i=0;i<7;i++){caleder=caleder+"<td>"+chine_day[i]+"</td>"}
+  for (var i=0;i<7;i++){caleder=caleder+'<td >'+chine_day[i]+"</td>"}
   caleder=caleder+"</tr>"
   var line=5
   if ((first_day==5 && days==31) || first_day==6)line=6
   for (var i=0;i<line;i++){
-    caleder=caleder+"<tr>"
+    caleder=caleder+'<tr>'
     for (var x=0;x<7;x++){
       if (i*7+x<first_day || i*7+x-first_day>=days){
         caleder=caleder+"<td>&nbsp;</td>"
@@ -76,7 +68,7 @@ function get_now_data()/*列印出行事曆日期*/{
     }
     caleder=caleder+"</tr>"
   }
-  caleder=caleder+"</table><div id='day_schedule'></div>"
+  caleder=caleder+"</table><div id='day_schedule'></div><div id='school_event'></div>"
   main.innerHTML=caleder
 }
 
@@ -88,7 +80,6 @@ function day_schedule(c_day)/*獲取被點擊當天的所有行程，並產生 t
   var i=-1
   for (var index=0;index<data_list.length;index++)if (data_list[index]==day){i=index;break}
   if (index==(data.length-1) && data[index]!=day)index=-1
-
   var detal=document.getElementById('day_schedule')
   var str="<h3>To_do list</h3><ul>"
   if (i>-1){
@@ -98,6 +89,43 @@ function day_schedule(c_day)/*獲取被點擊當天的所有行程，並產生 t
   }
   str=str+"<li id='add_list'><button onclick='add_event("+c_day+")'>+</button></li></ul>"
   detal.innerHTML=str
+  school_event(c_day)
+}
+
+function school_event(c_day){
+  var data=get_cookie("user_data")
+  data=JSON.parse(data)
+  if (data.school=='0')return 0
+  data=get_cookie("school_data")
+  data=JSON.parse(JSON.parse(data))
+  var show=[]
+  var list=document.getElementById("school_event")
+  var event=data.items
+  for(var x=0;x<event.length;x++){
+    var tmp=event[x]
+    var start=tmp.start_time.date
+    start=start.split("-")
+    for (var i=0;i<3;i++)start[i]=parseInt(start[i])
+    var end=tmp.end_time.date
+    end=end.split("-")
+    for (var i=0;i<3;i++)end[i]=parseInt(end[i])
+    if (n_year<start[0])tmp=0
+    else if (n_month+1<start[1])tmp=0
+    else if (c_day<start[2])tmp=0
+
+    if (n_year>end[0])tmp=0
+    else if (n_month+1>end[0])tmp=0
+    else if (c_day>end[2])tmp=0
+    if (tmp==0)continue
+    else show.push(event[x])
+  }
+  Str="<h3>school event</h3><ul>"
+  for (var i=0;i<show.length;i++){
+    Str+="<li>"+show[i].summary+"</li>"
+  }
+  Str+="</ul>"
+  if (show.length!=0)list.innerHTML=Str
+  else list.innerHTML=""
 }
 
 function add_event(day)/*新增被點擊那天的行程*/{
@@ -146,7 +174,7 @@ function write_event(c_day)/*將形成寫入cookie*/{
   }
   var json=JSON.stringify(tmp).replace(/"/g,"'")
   json=json.replace(/ /g,"%20")
-  var tmp=json+'%3D'+day
+  var tmp=json+'='+day
   console.log(tmp)
   write_cookie("user_data",data,limit)
   save_data("sec","add",tmp)
@@ -162,7 +190,7 @@ function del_event(c_day,index)/*將被刪除的行程從cookie移除*/{
   var i=-1
   for (var x=0;x<day.length;x++)if(day[x]==s_day){i=x;break};
   var e_data=data.ALL_sce
-  var be_del=JSON.stringify(e_data[index]).replace(/"/g,"'")
+  var be_del=JSON.stringify(e_data[index])
   console.log(be_del)
   if (index==0 && e_data[i].length==1){
     var tmp=[]
@@ -186,7 +214,7 @@ function del_event(c_day,index)/*將被刪除的行程從cookie移除*/{
   write_cookie("user_data",data,limit)
   get_now_data()
   day_schedule(c_day)
-  save_data("sec","del",be_del+"%3D"+s_day),0
+  save_data("sec","del",be_del+"="+s_day)
 }
 
 function month_move(move)/*行事曆的月份移動*/{
@@ -204,12 +232,12 @@ function month_move(move)/*行事曆的月份移動*/{
 function get_cookie(kind)/*讀取cookie*/{
   let decodeCookie=decodeURIComponent(document.cookie)
   let piece=decodeCookie.split(";")
-  let data
-  if (kind=="user_id")data=piece[1];
-  else if (kind=="user_data")data=piece[2];
-  kind=kind+'='
-  while (data.charAt(0)==' ')data=data.substring(1)
-  if (data.indexOf(kind)==0)return data.substring(kind.length,data.length)
+  for (var i=0;i<piece.length;i++){
+    var data=piece[i].split("=")
+    while (data[0].charAt(0)==' ')data[0]=data[0].substring(1)  
+    if (data[0]==kind)return data[1]
+  }
+  return 0
 }
 
 function write_cookie(name,data,time_limit)/*撰寫或修改cookie*/{
@@ -219,20 +247,25 @@ function write_cookie(name,data,time_limit)/*撰寫或修改cookie*/{
 
 function save_data(what,act,data)/*將有改變的資料回傳至web server*/{
   id=get_cookie("user_id")
-  data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/return_data?act="+act+"&ID="+id+"&what="+what+"&data="+data
-  console.log(data_Url)
+  data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/return_data"
   var xhr=new XMLHttpRequest()
-  xhr.open('GET',data_Url,true)
-  xhr.send()
+  xhr.open('post',data_Url,true)
+  xhr.setRequestHeader('Content-Type','application/json');
+  var req=JSON.stringify({"act":act,"ID":id,"data":data,"what":what})
+  console.log(req)
+  xhr.send(req)
 }
 
 function log_in_server(ID,passwd,time_limit)/*向web server提出登入請求，並回傳使用者資料*/{
-  data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/login?ID="+ID+"&passwd="+passwd
+  data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/login"
   var xhr=new XMLHttpRequest()
-  xhr.open('GET',data_Url,true)
-  xhr.send()
+  xhr.open('post',data_Url,true)
+  xhr.setRequestHeader('Content-Type','application/json');
+  var req=JSON.stringify({"ID":ID,"passwd":passwd})
+  xhr.send(req)
   xhr.onload=function(){
-    tmp=xhr.responseText
+    var tmp=xhr.responseText
+    tmp=tmp.replace(/@@/g," ")
     document.cookie = 'user_id='+ID+";"+time_limit
     document.cookie="user_data="+tmp+";"+time_limit
     if (tmp==0)main_window.innerHTML="<h3>log in fail</h3>"
@@ -241,22 +274,21 @@ function log_in_server(ID,passwd,time_limit)/*向web server提出登入請求，
   
 }
 
-function limit_time()/*設定cookie的到期時間*/{
-  const d=new Date()
-  d.setTime(d.getTime()+(7*24*60*60*1000))
-  return 'expires='+d.toUTCString()
-}
-
 function log_in()/*獲取使用者輸入的資料*/{
   var main_window=document.getElementById("main_window")
-  var str='<input id="username" type="text"><input id="passwd" type="password"><button id="sure">確定</button><a href="javascript:enroll()">沒有帳號嗎?</a>'
+  var str='<h3>帳號</h3><input id="username" type="text"><h3>密碼</h3><input id="passwd" type="password"><button id="sure">確定</button><a href="javascript:enroll()">沒有帳號嗎?</a>'
   main_window.innerHTML=str
   document.getElementById("sure").onclick=function(){
     ID=document.getElementById("username").value
     var passwd=document.getElementById("passwd").value
     log_in_server(ID,passwd,limit_time())
   }
+}
 
+function limit_time()/*設定cookie的到期時間*/{
+  const d=new Date()
+  d.setTime(d.getTime()+(7*24*60*60*1000))
+  return 'expires='+d.toUTCString()
 }
 
 function enroll()/*呼叫註冊頁面*/{
@@ -267,10 +299,16 @@ function inp_sure()/*獲取註冊資料*/{
   var ID=document.getElementById("e_username").value
   var passwd=document.getElementById("password").value
   var school=document.getElementById("school").value
-  var data={"user_id":ID,'passwd':passwd,'school_id':school}
-  write_cookie('user_id',null ,limit_time() )
-  data=JSON.stringify(data).replace(/"/g,"\'")
-  save_data("enroll","add",data+"%3D")
+  if (school==null)school=0
+  var data={"ID":ID,'passwd':passwd,'school':school}
+  data=JSON.stringify(data)
+  data_Url="https://92b8-210-70-74-168.jp.ngrok.io/action/enrol"
+  var xhr=new XMLHttpRequest()
+  xhr.open('post',data_Url,true)
+  xhr.setRequestHeader('Content-Type','application/json');
+  xhr.send(data)
+  write_cookie('user_id',ID ,limit_time())
+  log_in()
 }
 
 function list_of_reciprocal()/*獲取倒數計時時間*/{

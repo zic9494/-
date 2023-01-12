@@ -3,10 +3,11 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import function
+import school_data
 import user_data
-app=FastAPI()
+from pydantic import BaseModel
 
+app=FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*']
@@ -15,27 +16,39 @@ app.add_middleware(
 templates=Jinja2Templates(directory='./HTML')
 app.mount('/HTML',StaticFiles(directory='./HTML'),name='js')
 
-@app.get("/action/school_data")
-def find_calendar(schoolID:str,year:int,mon:int):
-    url=function.get_url(schoolID,year,mon)
-    data=function.get_data(url)
+class log_in(BaseModel):
+   ID:str
+   passwd:str
+
+class change_data(BaseModel):
+    act:str
+    ID:str
+    data:str
+    what:str
+
+class new_user(BaseModel):
+    ID:str
+    passwd:str
+    school:str
+
+@app.post("/action/login")
+def log_in(data:log_in):
+    data=user_data.log_in(data.ID,data.passwd)
     return data
 
-@app.get("/action/login")
-def log_in(ID:str,passwd:str,response:Response):
-    data=user_data.log_in(ID,passwd)
-    max_age=604800
-    response.set_cookie(key="user_data",value=data,max_age=max_age)
-    return data
+@app.post("/action/enrol")
+def enrol(data:new_user):
+    user_data.enroll(data.ID,data.passwd,data.school)
 
-@app.get("/action/enrol")
-def enrol(ID,passwd):
-    user_data.enroll(ID,passwd)
-
-@app.get("/action/return_data")
-def save_data(act,ID,data:str,what):
-    return user_data.save_data(act,ID,what,data)
+@app.post("/action/return_data")
+def save_data(data:change_data):
+    return user_data.save_data(data.act,data.ID,data.what,data.data)
 
 @app.get("/",response_class=HTMLResponse)
 def home(request:Request):
-    return templates.TemplateResponse('index.html',{'request':request})
+    return templates.TemplateResponse('test.html',{'request':request})
+
+@app.get("/action/school_data")
+def find_calendar(schoolID:str,year:int,mon:int):
+    data=school_data.get_data(schoolID,year,mon)
+    return data

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <title>網頁</title>
+        <!---link rel="stylesheet" type="text/css" href="{{ url_for('js',path='/html.css')}}"/--->
+    </head>
+    <body>
+        <!---div--->
+            <script src="{{ url_for('js',path='/js_index.js')}}" defer></script>
+            <button class="button1" type="button" onclick="today()">行事曆</button>
+            <button class="button2" onclick="log_in()">登入</button>
+            <button class="button3" onclick="list_of_reciprocal()">計時器</button>
+            <button onclick="memorable()">備忘錄</button>
+            <div  class=container id="main_window"></div>
+            <div id="side_window"></div>
+        <!---/div--->
+</html>
